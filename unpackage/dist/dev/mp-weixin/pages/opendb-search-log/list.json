@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "列表",
+  "usingComponents": {
+    "u-tabs": "../../uni_modules/uview-plus/components/u-tabs/u-tabs"
+  }
+}
