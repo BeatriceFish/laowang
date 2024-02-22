@@ -11,11 +11,26 @@ const _sfc_main = {
         ["列表C1", "列表C2", "列表C3"]
       ],
       list: [
-        { name: "苹果", brandNo: 0 },
-        { name: "华为", brandNo: 1 },
-        { name: "荣耀", brandNo: 2 },
-        { name: "小米", brandNo: 3 },
-        { name: "红米", brandNo: 4 }
+        {
+          name: "苹果",
+          brandNo: 0
+        },
+        {
+          name: "华为",
+          brandNo: 1
+        },
+        {
+          name: "荣耀",
+          brandNo: 2
+        },
+        {
+          name: "小米",
+          brandNo: 3
+        },
+        {
+          name: "红米",
+          brandNo: 4
+        }
       ],
       brand: "0",
       username: "",
@@ -37,7 +52,7 @@ const _sfc_main = {
       scrolltop: 0,
       scrollintoview: "",
       mainList: [],
-      navList: [],
+      navList: [{}, {}],
       navCount: 0,
       navNow: 0,
       vue_all_list: [],
@@ -51,8 +66,8 @@ const _sfc_main = {
     }).then((res) => {
       console.log(res.result.data);
       this.list = res.result.data;
+      this.list_data_left_api("iphone15");
     });
-    this.list_data_left_api("iphone15");
     common_vendor.index.showLoading({
       title: "加载中...",
       mask: true
@@ -93,7 +108,9 @@ const _sfc_main = {
         }
       }).then((res) => {
         this.list_data_left = res.result.data;
+        console.log(res.result.data);
         if (res.result.data.length) {
+          this.list_data_left_api(res.result.data[0].product);
           this.getSkuByProduct(res.result.data[0].product);
         }
       });
@@ -106,6 +123,21 @@ const _sfc_main = {
         }
       }).then((res) => {
         console.log(res);
+        if (res.result.data.length) {
+          this.list_data_right = res.result.data.map((item, i) => {
+            return {
+              id: res.result.data[i].name,
+              navId: res.result.data[i].name,
+              navScrollId: res.result.data[i].name,
+              data: {
+                id: res.result.data[i].name,
+                start: res.result.data[i].name,
+                name: res.result.data[i].product + res.result.data[i].memory + res.result.data[i].color
+              }
+            };
+          });
+        }
+        console.log(this.list_data_right);
       });
     },
     handleItemClick(id) {
@@ -184,13 +216,14 @@ const _sfc_main = {
       }
     },
     list_data_left_api(product) {
+      var _a, _b;
       var that = this;
       var mainList = [];
       var navList = [];
       let prevNav = "";
       var i = 0;
       this.getSkuByProduct(product);
-      for (i; i < 25; i++) {
+      for (i; i < 10; i++) {
         const mainId = "main-" + i;
         const navId = "nav-" + i;
         const tId = (1e4 + i).toString();
@@ -210,15 +243,17 @@ const _sfc_main = {
         navList.push({
           navId,
           mainId,
-          label: tId
+          label: ((_a = this.list_data_left[i]) == null ? void 0 : _a.name) ? (_b = this.list_data_left[i]) == null ? void 0 : _b.name : navId
         });
         prevNav = navId;
       }
       this.mainList = mainList;
       this.navList = navList;
-      console.log(this.navList);
+      console.log(this.navList, "navList===================");
       console.log(this.mainList);
-      this.navNow = this.navList[0].navId;
+      if (this.navList.length) {
+        this.navNow = this.navList[0].navId;
+      }
       setTimeout(function() {
         common_vendor.wx$1.createSelectorQuery().selectAll(".main-item").fields({
           // id:true,
@@ -236,6 +271,7 @@ const _sfc_main = {
           console.log("---------------------------vue_all_list_end");
         });
       }, 300);
+      this._onReadyApi();
     },
     list_data_right_api() {
       var list_data_right = [];
@@ -252,14 +288,12 @@ const _sfc_main = {
     onNav(e, kk) {
       console.log("________________onNav___" + kk);
       console.log("________________onNav___" + kk);
-      console.log("________________onNav___" + kk);
-      console.log("________________onNav___" + kk);
-      console.log("________________onNav___" + kk);
       var value = e.navId;
       console.log(e);
       if (e) {
         this.scrollintoview = value;
         this.navNow = kk;
+        this.getSkuByProduct(e.label);
       }
     },
     _onReadyApi() {
@@ -295,32 +329,27 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     d: common_vendor.t($data.my_hua_dong_num),
     e: common_vendor.f($data.navList, (item, index, i0) => {
-      return {
-        a: common_vendor.t(item.navId),
-        b: common_vendor.s($data.navNow == item.navId ? "background-color:red;" : "background-color: #9bf;"),
-        c: common_vendor.o(($event) => $options.onNav(item, item.navId), index),
-        d: index,
-        e: item.navId
-      };
+      return common_vendor.e({
+        a: item.label.indexOf("nav") == -1
+      }, item.label.indexOf("nav") == -1 ? {
+        b: common_vendor.t(item.label),
+        c: common_vendor.s($data.navNow == item.navId ? "background-color:red;" : "background-color: #9bf;"),
+        d: common_vendor.o(($event) => $options.onNav(item, item.navId), index)
+      } : {}, {
+        e: index,
+        f: item.navId
+      });
     }),
     f: $data.navCount,
     g: common_vendor.s("height:" + $data.hh + "px"),
     h: $data.navScroll,
-    i: common_vendor.f($data.mainList, (item, index, i0) => {
+    i: common_vendor.f($data.list_data_right, (item, index, i0) => {
       return {
-        a: common_vendor.t(item.navId),
-        b: common_vendor.f(9, (item_find, index_find, i1) => {
-          return common_vendor.e(index % 3 == 0 ? {} : {}, index % 3 == 1 ? {} : {}, index % 3 == 2 ? {} : {}, {
-            a: index_find
-          });
-        }),
-        c: index % 3 == 0,
-        d: index % 3 == 1,
-        e: index % 3 == 2,
-        f: index,
-        g: item.navId,
-        h: item.navId,
-        i: item.navScrollId
+        a: common_vendor.t(item.data.name),
+        b: index,
+        c: item.navId,
+        d: item.navId,
+        e: item.navScrollId
       };
     }),
     j: common_vendor.s("height:" + $data.hh + "px"),
