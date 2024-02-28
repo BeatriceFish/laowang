@@ -86,7 +86,26 @@ const _sfc_main = {
     common_vendor.index.hideLoading();
   },
   onShow() {
-    this.username = common_vendor.index.getStorageSync("username") || "";
+    common_vendor.Ds.callFunction({
+      name: "getType"
+    }).then((res) => {
+      console.log(res.result.data);
+      this.list = res.result.data;
+      this.list_data_left_api("iphone15");
+      this.handleBrandClick({ name: "苹果", brandNo: 0 });
+    });
+    common_vendor.index.showLoading({
+      title: "加载中...",
+      mask: true
+    });
+    let list = [{}];
+    for (let i = 0; i < 26; i++) {
+      list[i] = {};
+      list[i].name = String.fromCharCode(65 + i);
+      list[i].id = i;
+    }
+    this.list = list;
+    this.listCur = list[0];
   },
   onPullDownRefresh() {
     this.$refs.udb.loadData({
@@ -110,19 +129,19 @@ const _sfc_main = {
         this.list_data_left = res.result.data;
         console.log(res.result.data);
         if (res.result.data.length) {
-          this.list_data_left_api(res.result.data[0].product);
+          this.list_data_left_api(item.name);
           this.getSkuByProduct(res.result.data[0].product);
         }
       });
     },
-    getSkuByProduct(product) {
+    getSkuByProduct(type) {
       common_vendor.Ds.callFunction({
         name: "getSkuByProduct",
         data: {
-          product
+          type
         }
       }).then((res) => {
-        console.log(res);
+        console.log(res, "=====240");
         if (res.result.data.length) {
           this.list_data_right = res.result.data.map((item, i) => {
             return {
@@ -132,7 +151,8 @@ const _sfc_main = {
               data: {
                 id: res.result.data[i].name,
                 start: res.result.data[i].name,
-                name: res.result.data[i].product + res.result.data[i].memory + res.result.data[i].color
+                name: res.result.data[i].product + res.result.data[i].memory,
+                colors: res.result.data[i].colors ? res.result.data[i].colors : []
               }
             };
           });
@@ -215,14 +235,14 @@ const _sfc_main = {
         }
       }
     },
-    list_data_left_api(product) {
+    list_data_left_api(type) {
       var _a, _b;
       var that = this;
       var mainList = [];
       var navList = [];
       let prevNav = "";
       var i = 0;
-      this.getSkuByProduct(product);
+      this.getSkuByProduct(type);
       for (i; i < 10; i++) {
         const mainId = "main-" + i;
         const navId = "nav-" + i;
@@ -346,10 +366,16 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     i: common_vendor.f($data.list_data_right, (item, index, i0) => {
       return {
         a: common_vendor.t(item.data.name),
-        b: index,
-        c: item.navId,
+        b: common_vendor.f(item.data.colors, (item1, index2, i1) => {
+          return {
+            a: common_vendor.t(item1.color),
+            b: common_vendor.t(item1.price)
+          };
+        }),
+        c: index,
         d: item.navId,
-        e: item.navScrollId
+        e: item.navId,
+        f: item.navScrollId
       };
     }),
     j: common_vendor.s("height:" + $data.hh + "px"),

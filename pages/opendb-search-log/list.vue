@@ -37,27 +37,29 @@
 					style="margin-bottom: 10rpx; border-radius: 0rpx;border: 0rpx solid red;padding: 20rpx 30rpx 0 30rpx;">
 					<view style="width: 100%;;display: flex;flex-wrap: wrap;justify-content: space-between;">
 						<view style="width: 100%;height: 50rpx;;display: flex;align-items: center;">{{item.data.name}}
+							
 						</view>
+						<view style="width: 100%;height: 50rpx;;display: flex;align-items: center;" v-for="(item1,index) in item.data.colors">
+							<view style="display: flex;justify-content: space-between;">
+								<view class="">{{item1.color}}</view>
+								<view class="">{{item1.price}}</view>
+							</view>
+						</view>
+						<!-- <view class="" v-for="(item1,i) in item.colors" :key="i">
+							{{item1}}11
+						</view> -->
 						<!-- <view
 							style="width: 30%;height: 170rpx;background-color: #f2f2f2;margin-top: 20rpx;overflow: hidden;border-radius: 25rpx;position: relative;"
-							v-for="(item_find,index_find) in 9" :key="index_find"> -->
-							<!-- 自定义页面布局start -->
-							<!-- 自定义页面布局start -->
-							<!-- 自定义页面布局start -->
-
-							<!-- <view style="width: 100%;height: 60rpx;line-height: 60rpx;background-color: #ccc;position: absolute;bottom: 0rpx;color: red;
-	  					display: flex;align-items: center;justify-content: center;z-index: 99;opacity: 0.5;">
-	  						早餐
-	  					</view> -->
-							<!-- <view style="width: 170rpx;height: 170rpx;background-color: pink;">
+							v-for="(item_find,index_find) in item.colors" :key="index_find">
+							<view style="width: 170rpx;height: 170rpx;background-color: pink;">
 								<image v-if="index%3==0" src="../../static/icon_img/bing.png"
 									style="width: 170rpx;height: 170rpx;"></image>
 								<image v-if="index%3==1" src="../../static/icon_img/mangguo.png"
 									style="width: 170rpx;height: 170rpx;"></image>
 								<image v-if="index%3==2" src="../../static/icon_img/xigua.png"
 									style="width: 170rpx;height: 170rpx;"></image>
-							</view> -->
-						<!-- </view> -->
+							</view>
+						</view> -->
 
 						<view style="width: 170rpx;height: 0rpx;margin-bottom: 20rpx;"></view>
 						<view style="width: 170rpx;height: 0rpx;margin-bottom: 20rpx;"></view>
@@ -177,12 +179,6 @@
 				this.list_data_left_api('iphone15')
 			})
 
-			// this.list_data_left_api('iphone15')
-
-
-			//
-
-
 			uni.showLoading({
 				title: '加载中...',
 				mask: true
@@ -201,7 +197,28 @@
 			uni.hideLoading()
 		},
 		onShow() {
-			this.username = uni.getStorageSync('username') || '';
+			// this.username = uni.getStorageSync('username') || '';
+			uniCloud.callFunction({
+				name: 'getType'
+			}).then(res => {
+				console.log(res.result.data)
+				this.list = res.result.data
+				this.list_data_left_api('iphone15')
+				this.handleBrandClick({name: '苹果',brandNo: 0})
+			})
+			
+			uni.showLoading({
+				title: '加载中...',
+				mask: true
+			});
+			let list = [{}];
+			for (let i = 0; i < 26; i++) {
+				list[i] = {};
+				list[i].name = String.fromCharCode(65 + i);
+				list[i].id = i;
+			}
+			this.list = list;
+			this.listCur = list[0];
 		},
 		onPullDownRefresh() {
 			this.$refs.udb.loadData({
@@ -225,19 +242,19 @@
 					this.list_data_left = res.result.data
 					console.log(res.result.data)
 					if (res.result.data.length) {
-						this.list_data_left_api(res.result.data[0].product)
+						this.list_data_left_api(item.name)
 						this.getSkuByProduct(res.result.data[0].product)
 					}
 				})
 			},
-			getSkuByProduct(product) {
+			getSkuByProduct(type) {
 				uniCloud.callFunction({
 					name: 'getSkuByProduct',
 					data: {
-						product: product
+						type: type
 					}
 				}).then(res => {
-					console.log(res)
+					console.log(res,'=====240')
 					if(res.result.data.length){
 						// this.list_data_right.push({
 						// 	id: res.result.data[0].name,
@@ -257,7 +274,8 @@
 								data: {
 									id: res.result.data[i].name,
 									start: res.result.data[i].name,
-									name: res.result.data[i].product + res.result.data[i].memory + res.result.data[i].color,
+									name: res.result.data[i].product + res.result.data[i].memory,
+									colors:res.result.data[i].colors?res.result.data[i].colors:[]
 								}
 							}
 						})
@@ -383,7 +401,7 @@
 			},
 
 
-			list_data_left_api(product) {
+			list_data_left_api(type) {
 				var that = this
 				//mainList
 				var mainList = []
@@ -395,7 +413,7 @@
 				let prevNav = ''
 
 				var i = 0
-				this.getSkuByProduct(product)
+				this.getSkuByProduct(type)
 				// debugger
 				for (i; i < 10; i++) {
 					const mainId = 'main-' + i
